@@ -1,6 +1,6 @@
 import abc
 
-import model
+import domain.model as model
 
 
 class AbstractRepository(abc.ABC):
@@ -43,3 +43,7 @@ class FakeRepository(AbstractRepository):
 
     def list(self):
         return list(self._batches)
+
+    @staticmethod
+    def for_batch(ref, sku, qty, eta=None):
+        return FakeRepository([model.Batch(ref, sku, qty, eta)])

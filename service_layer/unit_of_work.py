@@ -8,7 +8,10 @@ from adapters import repository
 
 
 DEFAULT_SESSION_FACTORY = sessionmaker(
-    bind=create_engine(config.get_postgres_uri())
+    bind=create_engine(
+        config.get_postgres_uri(),
+        isolation_level="REPEATABLE READ",
+    )
 )
 
 
@@ -30,17 +33,16 @@ class AbstractUnitOfWork(abc.ABC):
         raise NotImplementedError
 
 
-class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
+class SqlAlchemyUnitOfWork:
     def __init__(self, session_factory=DEFAULT_SESSION_FACTORY):
         self.session_factory = session_factory
 
     def __enter__(self):
         self.session = self.session_factory()
-        self.batches = repository.SqlAlchemyRepository(self.session)
-        return super().__enter__()
+        self.products = repository.SqlAlchemyRepository(self.session)
+        return self
 
     def __exit__(self, *args):
-        super().__exit__(*args)
         self.session.close()
 
     def commit(self):
